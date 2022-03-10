@@ -121,17 +121,6 @@ def presets_re():
 	preset.repl_ANSIm = re.compile(r'\033\[[;\d]*m', re.VERBOSE).sub
 	preset.repl_ESCt = re.compile(r'\t', re.VERBOSE).sub
 	return preset
-def std_wr(s):
-	sys.stdout.write(str(s))
-	sys.stdout.flush()
-
-
-def tty_writesbl(s):
-	def stdout_write():
-		sys.stdout.write(s)
-		sys.stdout.flush()
-		return tty_len()
-	return stdout_write
 
 def mtx_pivot(mtx) -> list:
 	return [[mtx[c[0]][r[0]] for c in enumerate(r[1])] for r in enumerate(mtx)]
@@ -155,17 +144,6 @@ def dcon_table(table):
 	tbl.meta.mrg = table.get('M').get('mrg')
 	return tbl
 
-def mtx_tblsurface(fs, mg, pd, data):
-	# cell= padd[:x]+data+padd[x:]
-	# fs= mg+fs+mg
-	cells_dmy = [str().ljust(mx, '#').ljust(mx + tty_len(pd), pd) for mx in lst_datamax(data)]
-	len_fs = tty_len(s=f'{mg}{fs}{mg}')
-	
-	rowdummy = f'{mg}{fs}{mg}'.join(cells_dmy)
-	print(('dummy', rowdummy) for line in data)
-
-
-
 def calc_lst_mrg(mrg, nheaders) -> list:
 	return	[['', mrg],*[[mrg,mrg] for _ in range(nheaders)][:-2],[mrg,'']]
 
@@ -179,7 +157,7 @@ def calc_lst_lnpdd(lst_pdd) -> list:
 	return [tty_len(pdd) for pdd in lst_pdd]
 
 def calc_lst_fss(fs,nheaders) -> list:
-		return [fs for _ in range(nheaders)][:-2]
+		return [fs for _ in range(nheaders)][:-1]
 
 def calc_lst_css(lst_fss,lst_mrg):
 	return [f'{lst_mrg[i][1]}{lst_fss[i]}{lst_mrg[i+1][0]}' for i in range(len(lst_fss))]
@@ -215,6 +193,16 @@ def calc_mtx_dataw(mtx_data):
 		for cell in row:
 			mtx_dataw[r]+= [tty_len(cell)]
 	return mtx_dataw
+
+def calc_mtx_idxy(mtx_data):
+	mtx_idxy=[[[] for col in row] for row in mtx_data]
+	for r,row in enumerate(mtx_data):
+		for c,col in enumerate(row):
+			mtx_idxy[r][c]=(r+1,c+1)
+	return mtx_idxy
+
+
+
 	
 def tbl_calc(table):
 	tbl = dcon_table(table)
@@ -232,7 +220,7 @@ def tbl_calc(table):
 	lst_maxdataw			=calc_lst_maxdataw(piv_dataw)
 	lst_lncoll				=calc_lst_lncoll(lst_maxdataw,lst_lnpdd)
 	lst_offset_coll		=calc_lst_offset_coll(lst_lncoll,lst_lncss)
-	
+	mtx_idxy					=calc_mtx_idxy(tbl.data)
 
 	
 	ccld={ #calculated
@@ -249,6 +237,7 @@ def tbl_calc(table):
 		        	'offset_coll'	:	lst_offset_coll,
 						},
 		'mtx':	{
+							'idxy'				:	mtx_idxy,
 				      'dataw' 			: mtx_dataw,
 			    	  'piv_dataw'   :	piv_dataw,
 						},
@@ -276,17 +265,6 @@ for section in calc.keys():
 # listprt2([calc.lst_stdw_ltorg])
 # listprt2([calc.lst_stdw_fsorg])
 
-
-calc = calc_dimensions(table=table1)
-mtx_relorg = calc.mtx_relorg
-stdw_table = []
-# tbl=dcon_table(table=table1)
-for r, row in enumerate(tbl.data):
-	for c, cell in enumerate(row):
-		calc.lst_stdw_ltorg[c]()
-		(calc.lst_stdw_ltorg[c](), std_wr(tbl.data[r][c]))
-		[(b(), std_wr(f'\033[0m{fs}')) for b in calc.lst_stdw_fsorg]
-	std_wr('\n')
 
 import time
 
@@ -345,3 +323,23 @@ def mtx_dataw(mtx_data) -> list:
 def mtx_relorg(data) -> list:
 	return [[[f'{F(r)}{G(lst_cellw(**k)[c])}'] for c, cell in enumerate(data[r])] for r, row in enumerate(data)]
 
+
+def mtx_tblsurface(fs, mg, pd, data):
+	# cell= padd[:x]+data+padd[x:]
+	# fs= mg+fs+mg
+	cells_dmy = [str().ljust(mx, '#').ljust(mx + tty_len(pd), pd) for mx in lst_datamax(data)]
+	len_fs = tty_len(s=f'{mg}{fs}{mg}')
+	
+	rowdummy = f'{mg}{fs}{mg}'.join(cells_dmy)
+	print(('dummy', rowdummy) for line in data)
+def std_wr(s):
+	sys.stdout.write(str(s))
+	sys.stdout.flush()
+
+
+def tty_writesbl(s):
+	def stdout_write():
+		sys.stdout.write(s)
+		sys.stdout.flush()
+		return tty_len()
+	return stdout_write
