@@ -36,9 +36,9 @@ table1 = {
 	'M': {
 		'tb': {False},
 		'cb': {True},
-		'fs': '|',  # \u250B',
-		'pd': '-',
-		'mg': '_',
+		'fss': '|',  # \u250B',
+		'pdd': '-',
+		'mrg': '_',
 		'al': ['l', 'c', 'r']
 		},  # M META
 	'D': [
@@ -106,10 +106,10 @@ def terminal_width(**k):
 	stored += [width]
 	diff = (-1 * (stored[-2] - stored[-1]))
 	return stored
-def tty_len(*a, **k):
+def tty_len(s, **k):
 	re = presets_re()
 	wtab = '\u0020' * (k.get('t') or 4)
-	s = str(k.get('s')) or a.s
+	s = s or str(k.get('s'))
 	s = re.repl_ESCt(wtab, str(s))
 	s = re.repl_ANSIm('', str(s))
 	return len(s)
@@ -149,10 +149,10 @@ def dcon_table(table):
 	tbl.footers = table.get('F')
 	tbl.data = table.get('D')
 	tbl.meta = types.SimpleNamespace()
-	fs = table.get('M').get('fs')
-	tbl.meta.pd = table.get('M').get('pd')
+	tbl.meta.fss = table.get('M').get('fss')
+	tbl.meta.pdd = table.get('M').get('pdd')
 	tbl.meta.al = table.get('M').get('al')
-	tbl.meta.mg = table.get('M').get('mg')
+	tbl.meta.mrg = table.get('M').get('mrg')
 	return tbl
 
 def mtx_tblsurface(fs, mg, pd, data):
@@ -166,41 +166,41 @@ def mtx_tblsurface(fs, mg, pd, data):
 
 
 
-def lst_mrg(mrg, headers) -> list:
-	return	[['', mrg],*[[mrg,mrg] for ncol in headers][:-2],[mrg,'']]
+def calc_lst_mrg(mrg, nheaders) -> list:
+	return	[['', mrg],*[[mrg,mrg] for _ in range(nheaders)][:-2],[mrg,'']]
 
-def lst_lnmrg(lst_mrg) -> list:
-	return [(tty_len(mrg[m-1][1])+tty_len(mrg[m][0])) for m,mrg in enumerate(lst_mrg,start=1)]
+def calc_lst_lnmrg(lst_mrg) -> list:
+	return [(tty_len(lst_mrg[m][1])+tty_len(lst_mrg[m+1][0])) for m in range(len(lst_mrg)-1)]
 
-def lst_pdd(pdd, headers) -> list:
+def calc_lst_pdd(pdd, headers) -> list:
 	return [pdd for ncol in headers]
 
-def lst_lnpdd(lst_pdd) -> list:
+def calc_lst_lnpdd(lst_pdd) -> list:
 	return [tty_len(pdd) for pdd in lst_pdd]
 
-def lst_fss(fs,headers) -> list:
-		return ['',]+[fs for item in headers]
+def calc_lst_fss(fs,nheaders) -> list:
+		return [fs for _ in range(nheaders)][:-2]
 
-def lst_css(lst_fss,lst_mrg):
-	return [f'{lst_mrg[i-1][1]}{fss}{lst_mrg[i][0]}' for i,fss in enumerate(lst_fss,start=1)]
+def calc_lst_css(lst_fss,lst_mrg):
+	return [f'{lst_mrg[i][1]}{lst_fss[i]}{lst_mrg[i+1][0]}' for i in range(len(lst_fss))]
 
-def lst_lncss(lst_css):
+def calc_lst_lncss(lst_css):
 	return [tty_len(css) for css in lst_css]
 
-def lst_maxdataw(piv_dataw) -> list:  # calculate the minimum width of collumn for all data in col to fit .
+def calc_lst_maxdataw(piv_dataw) -> list:  # calculate the minimum width of collumn for all data in col to fit .
 	return [max(col) for col in piv_dataw]
 
-def lst_lncoll(lst_maxdataw,lst_lnpdd) -> list:
+def calc_lst_lncoll(lst_maxdataw,lst_lnpdd) -> list:
 	return [(lndata + lnpdd) for lndata, lnpdd in zip(lst_maxdataw, lst_lnpdd)]
 
-def lst_offset_coll(lst_lncoll,lst_lncss):
+def calc_lst_offset_coll(lst_lncoll,lst_lncss):
 	def addrel(add,rel=[],offset=[0,]):
 		rel+=[add]
 		offset+=[sum(rel)]
 		return offset
-	for lncoll,lncss in zip(lst_lncoll,lst_lncss):
-		lst_offset_coll=addrel(lncoll+lncss)
-	return lst_offset_coll
+	for lncoll in lst_lncoll:
+		lst_offset_coll=addrel(lncoll+lst_lncss[0])
+	return lst_offset_coll[:-1]
 	
 
 def lst_ltorg(fs,cellw) -> list:
@@ -209,60 +209,70 @@ def lst_ltorg(fs,cellw) -> list:
 	lst_leftbounds += [lst_cellbwidths[i] + cell + tty_len(s=fs) for i, cell in enumerate(cellw[:-1])]
 	return lst_leftbounds
 
-
-
-def lst_stdw_ltorg() -> list:
-	return [tty_writesbl(s=G(lb)) for lb in lst_ltorg(**k)]
-
-def lst_stdw_fsorg() -> list:
-	return [tty_writesbl(s=G(pd)) for pd in lst_fsorg(**k)]
-
-def mtx_dataw(mtx_data) -> list:
-	return [[tty_len(s=cell) for cell in row] for row in mtx_data]
-
-def mtx_relorg(data) -> list:
-	return [[[f'{F(r)}{G(lst_cellw(**k)[c])}'] for c, cell in enumerate(data[r])] for r, row in enumerate(data)]
-
+def calc_mtx_dataw(mtx_data):
+	mtx_dataw=[[] for row in mtx_data]
+	for r,row in enumerate(mtx_data):
+		for cell in row:
+			mtx_dataw[r]+= [tty_len(cell)]
+	return mtx_dataw
+	
 def tbl_calc(table):
 	tbl = dcon_table(table)
+	nheaders=len(tbl.headers)
+	mtx_dataw=calc_mtx_dataw(tbl.data)
+	piv_dataw=mtx_pivot(mtx_dataw)
 	
-	def calc(fn,a):
-		return fn(*a)
-
-	def c():
-		import types
-		c 					= types.SimpleNamespace()
-		c.lst				=types.SimpleNamespace()
-		c.lst.pdd					= calc(lst_pdd, 			[tbl.meta.pd ,tbl.headers])  # [4, 4, 4]
-		c.lst.collw 			= calc(lst_datamax, 	[tbl.data,])  # +___[5, 10, 9]
-		c.lst.cellw 			= calc(lst_cellw, 		[c.lst.pdd,c.lst.collw])  # =		[9, 14, 13] __/_+2
-		c.lst.ltorg 			= calc(lst_ltorg, 		[tbl.meta.fs,c.lst.cellw ])  # [0, 11, 27] 		/	+ =
-		c.lst.fsorg 			= calc(lst_fsorg, table)  # [9, 25] 			| field separator
-		c.lst.stdw_ltorg	= calc(lst_stdw_ltorg, table)
-		c.lst.stdw_fsorg	= calc(lst_stdw_fsorg, table)
-		c.mtx				=types.SimpleNamespace()
-		c.mtx.dataw = tbl_dim(mtx_dataw, table)  # [	[1, 2, 3], [[['\x1b[0F\x1b[9G'], ['\x1b[0F\x1b[14G'], ['\x1b[0F\x1b[13G']],
-		c.mtx.relorg = tbl_dim(mtx_relorg, table)  # [5, 10, 9]	[['\x1b[1F\x1b[9G'], ['\x1b[1F\x1b[14G'], ['\x1b[1F\x1b[13G']]
-		return c  # [1, 5, 8]]	[['\x1b[2F\x1b[9G'], ['\x1b[2F\x1b[14G'], ['\x1b[2F\x1b[13G']]]
+	lst_mrg						=calc_lst_mrg(tbl.meta.mrg, nheaders)
+	lst_lnmrg					=calc_lst_lnmrg(lst_mrg)
+	lst_pdd						=calc_lst_pdd(tbl.meta.pdd, tbl.headers)
+	lst_lnpdd					=calc_lst_lnpdd(lst_pdd)
+	lst_fss						=calc_lst_fss(tbl.meta.fss,nheaders)
+	lst_css						=calc_lst_css(lst_fss,lst_mrg)
+	lst_lncss					=calc_lst_lncss(lst_css)
+	lst_maxdataw			=calc_lst_maxdataw(piv_dataw)
+	lst_lncoll				=calc_lst_lncoll(lst_maxdataw,lst_lnpdd)
+	lst_offset_coll		=calc_lst_offset_coll(lst_lncoll,lst_lncss)
 	
-	mtx_tblsurface(table)
-	return calc()
 
-def listprt(lst):
-	for tem in lst:
-		print(repr(tem))
+	
+	ccld={ #calculated
+		'lst': {
+							'mrg'					:	lst_mrg,
+		        	'lnmrg'				:	lst_lnmrg,
+		        	'pdd'					:	lst_pdd,
+		        	'lnpdd'				:	lst_lnpdd,
+		        	'fss'					:	lst_fss,
+		        	'css'					:	lst_css,
+		        	'lncss'				:	lst_lncss,
+		        	'maxdataw'		:	lst_maxdataw,
+		        	'lncoll'			:	lst_lncoll,
+		        	'offset_coll'	:	lst_offset_coll,
+						},
+		'mtx':	{
+				      'dataw' 			: mtx_dataw,
+			    	  'piv_dataw'   :	piv_dataw,
+						},
+		}
+	return ccld
+	
 
-def listprt2(lst):
-	print('fn')
-	for tm in lst:
-		[print(t) for t in tm]
 
 
 
 
 
-calc = calc_dimensions(table1)
-listprt2([calc.lst_pdd, calc.lst_collw, calc.lst_cellw, calc.lst_ltorg, calc.lst_fsorg, calc.mtx_dataw, calc.mtx_relorg, ])
+
+
+
+
+
+
+
+calc = tbl_calc(table1)
+for section in calc.keys():
+	for key in calc[section].keys():
+		print(section+':\t\t'+key+':\t'+str(calc[section][key]))
+		
 # listprt2([calc.lst_stdw_ltorg])
 # listprt2([calc.lst_stdw_fsorg])
 
@@ -324,3 +334,14 @@ dat_org = H('2;0')  # ANSI_H(f'{tpl_org[1]+2};{tpl_org[0]}')
 # calc_dimensions(tbl=table1)
 #
 # calc_dimensions(tbl=table2)
+def lst_stdw_ltorg() -> list:
+	return [tty_writesbl(s=G(lb)) for lb in lst_ltorg(**k)]
+
+def lst_stdw_fsorg() -> list:
+	return [tty_writesbl(s=G(pd)) for pd in lst_fsorg(**k)]
+def mtx_dataw(mtx_data) -> list:
+	return [[tty_len(s=cell) for cell in row] for row in mtx_data]
+
+def mtx_relorg(data) -> list:
+	return [[[f'{F(r)}{G(lst_cellw(**k)[c])}'] for c, cell in enumerate(data[r])] for r, row in enumerate(data)]
+
