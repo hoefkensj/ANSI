@@ -36,9 +36,9 @@ table1 = {
 	'M': {
 		'tb': {False},
 		'cb': {True},
-		'fss': '|',  # \u250B',
-		'pdd': '-',
-		'mrg': '_',
+		'fss': '\u250B',  # \u250B',
+		'pdd': {'char':' ','min':4},
+		'mrg': ' ',
 		'al': ['l', 'c', 'r']
 		},  # M META
 	'D': [
@@ -48,6 +48,22 @@ table1 = {
 		],
 	'F': [['help'], ['footer']]
 	}
+table1 = {
+	'T': [['title'], ['subtitle']],  # T TITLES
+	'H': ['idx', 'header1', 'header2'],  # H HEADERS
+	'M': {# M META
+		'fss': '\u250B',  # \u250B',
+		'pdd': {'char':' ','min':4},
+		'mrg': ' ',
+		},
+	'D': [
+		[1, 'd2', '123'],
+		[5, 'data\tp2', '\033[1msomedata ', ],
+		[3, '\033[32mGreen\033[0m', 'data5299'],
+		],
+	}
+	
+	
 table2 = {
 	'T': [['{title}'], ['{subtitle}']],  # T TITLES
 	'H': ['{h-idx}', 'h-1', 'h-n', 'h-sub'],  # H HEADERS
@@ -106,13 +122,27 @@ def terminal_width(**k):
 	stored += [width]
 	diff = (-1 * (stored[-2] - stored[-1]))
 	return stored
-def tty_len(s, **k):
+def tty_conv(s,t=4):
 	re = presets_re()
-	wtab = '\u0020' * (k.get('t') or 4)
-	s = s or str(k.get('s'))
+	wtab = '\u0020' * t
+	s = str(s)
 	s = re.repl_ESCt(wtab, str(s))
+	return s
+	
+def tty_len(s):
+	re = presets_re()
 	s = re.repl_ANSIm('', str(s))
+	s=tty_conv(s)
 	return len(s)
+
+def tty_str(s):
+	re = presets_re()
+	s = re.repl_ANSIm('', str(s))
+	s=tty_conv(s)
+	return s
+def tty_mstr(s):
+	s=tty_conv(s)
+	return s
 def presets_re():
 	import types
 	import re
@@ -120,6 +150,7 @@ def presets_re():
 	preset = types.SimpleNamespace()
 	preset.repl_ANSIm = re.compile(r'\033\[[;\d]*m', re.VERBOSE).sub
 	preset.repl_ESCt = re.compile(r'\t', re.VERBOSE).sub
+	preset.repl_ESCs = re.compile(r' ', re.VERBOSE).sub
 	return preset
 
 def mtx_pivot(mtx) -> list:
@@ -201,6 +232,16 @@ def calc_mtx_idxy(mtx_data):
 			mtx_idxy[r][c]=(r+1,c+1)
 	return mtx_idxy
 
+def calc_mtx_data(tbl_data,lst_lncoll,pdd):
+	mtx_datal=[[[] for col in row] for row in tbl_data]
+	mtx_datar=[[[] for col in row] for row in tbl_data]
+	mtx_datac=[[[] for col in row] for row in tbl_data]
+	for r,row in enumerate(tbl_data):
+		for c,cell in enumerate(row):
+			mtx_datal[r][c]=str('{}'.format(tty_str(str(cell))).ljust(lst_lncoll[c],pdd.get('char'))).replace(tty_str(str(cell)),tty_mstr(str(cell)))
+			mtx_datar[r][c]=str('{}'.format(tty_str(str(cell))).rjust(lst_lncoll[c],pdd.get('char'))).replace(tty_str(str(cell)),tty_mstr(str(cell)))
+			mtx_datac[r][c]=str('{}'.format(tty_str(str(cell))).center(lst_lncoll[c],pdd.get('char'))).replace(tty_str(str(cell)),tty_mstr(str(cell)))
+	return {'l':mtx_datal,'r':mtx_datar,'c':mtx_datac}
 
 
 	
@@ -209,10 +250,12 @@ def tbl_calc(table):
 	nheaders=len(tbl.headers)
 	mtx_dataw=calc_mtx_dataw(tbl.data)
 	piv_dataw=mtx_pivot(mtx_dataw)
+	ln_pdd=tty_len(tbl.meta.pdd.get('char'))
+	min_pdd=tbl.meta.pdd.get('char')*tbl.meta.pdd.get('min')
 	
 	lst_mrg						=calc_lst_mrg(tbl.meta.mrg, nheaders)
 	lst_lnmrg					=calc_lst_lnmrg(lst_mrg)
-	lst_pdd						=calc_lst_pdd(tbl.meta.pdd, tbl.headers)
+	lst_pdd						=calc_lst_pdd(min_pdd, tbl.headers)
 	lst_lnpdd					=calc_lst_lnpdd(lst_pdd)
 	lst_fss						=calc_lst_fss(tbl.meta.fss,nheaders)
 	lst_css						=calc_lst_css(lst_fss,lst_mrg)
@@ -221,7 +264,7 @@ def tbl_calc(table):
 	lst_lncoll				=calc_lst_lncoll(lst_maxdataw,lst_lnpdd)
 	lst_offset_coll		=calc_lst_offset_coll(lst_lncoll,lst_lncss)
 	mtx_idxy					=calc_mtx_idxy(tbl.data)
-
+	mtx_data					=calc_mtx_data(tbl.data,lst_lncoll,tbl.meta.pdd)
 	
 	ccld={ #calculated
 		'lst': {
@@ -238,6 +281,7 @@ def tbl_calc(table):
 						},
 		'mtx':	{
 							'idxy'				:	mtx_idxy,
+							'data'				: mtx_data,
 				      'dataw' 			: mtx_dataw,
 			    	  'piv_dataw'   :	piv_dataw,
 						},
@@ -255,13 +299,24 @@ def tbl_calc(table):
 
 
 
-
-
 calc = tbl_calc(table1)
+css=['',*calc['lst']['css']]
+
+tbl_mtx=calc['mtx']
+tbl_mtx_data=tbl_mtx['data']
 for section in calc.keys():
 	for key in calc[section].keys():
 		print(section+':\t\t'+key+':\t'+str(calc[section][key]))
-		
+for align in tbl_mtx_data.values():
+	for row in align:
+		for col,fs in zip(row,css):
+
+			sys.stdout.write(fs)
+			sys.stdout.write(col)
+			sys.stdout.flush()
+		sys.stdout.write('\n')
+		sys.stdout.flush()
+	
 # listprt2([calc.lst_stdw_ltorg])
 # listprt2([calc.lst_stdw_fsorg])
 
