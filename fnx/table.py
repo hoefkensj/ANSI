@@ -14,7 +14,7 @@ table1 = {
 		'tb': {False},
 		'cb': {True},
 		'fss': '\u2502',  # \u250B',
-		'pdd': {'char':' ','min':[0,4,4]},
+		'pdd': {'char':'#','min':[2,4,4]},
 		'mrg': ' ',
 		'al': ['l', 'c', 'r']
 		},  # M META
@@ -206,6 +206,14 @@ def calc_lst_heads(tbl_heads,lst_lncoll,pdd):
 		mtx_datac[c]=str('{}'.format(tty_str(str(cell))).center(lst_lncoll[c],pdd.get('char'))).replace(tty_str(str(cell)),tty_mstr(str(cell)))
 	return {'l':mtx_datal,'r':mtx_datar,'c':mtx_datac}
 
+def calc_lst_ansih(lst_offx):
+	import ANSI.lib.ansi
+	ANSI=ANSI.lib.ansi.fn()
+	coord=std_cursorloc()
+	H=ANSI.cursor.position
+	lst_ansih=[H(';'.join([str(coord[0]),str(-1+colx+coord[1])])) for colx in lst_offx]
+	return lst_ansih
+
 def lst_ltorg(fs,cellw) -> list:
 	lst_leftbounds = [0, ]
 	lst_cellbwidths = [0, ] + [i + tty_len(s=fs) for i in cellw]
@@ -276,6 +284,18 @@ def calc_mtx_ansih(mtx_offx,mtx_offy):
 		for c,(colx,coly) in enumerate(zip(rowx,rowy)):
 			mtx_ansih[r][c]=H(';'.join([str(1+coly+coord[0]),str(-1+colx+coord[1])]))
 	return mtx_ansih
+
+def calc_mtx_cssxy(mtx_offx,mtx_offy,lst_css):
+	import ANSI.lib.ansi
+	ANSI=ANSI.lib.ansi.fn()
+	coord=std_cursorloc()
+	H=ANSI.cursor.position
+	mtx_cssxy=[[[] for col in row] for row in mtx_offx]
+	for r,(rowx,rowy) in enumerate(zip(mtx_offx,mtx_offy)):
+		for c,(colx,coly) in enumerate(zip(rowx,rowy)):
+			mtx_cssxy[r][c]=H(';'.join([str(1+coly+coord[0]),str(-1+colx+coord[1]-len(lst_css[0]))]))
+	return mtx_cssxy
+
 	
 def tbl_calc(table):
 	tbl					= dcon_table(table)
@@ -286,7 +306,7 @@ def tbl_calc(table):
 	headers			=	tbl.headers
 	pdd					=	tbl.meta.pdd
 	
-	lst_mrg			= calc_lst_mrg(tbl.meta.mrg, ncols)
+	lst_mrg						=calc_lst_mrg(tbl.meta.mrg, ncols)
 	lst_lnmrg					=calc_lst_lnmrg(lst_mrg)
 	lst_pdd						=calc_lst_pdd(pdd, ncols)
 	lst_lnpdd					=calc_lst_lnpdd(lst_pdd)
@@ -297,11 +317,13 @@ def tbl_calc(table):
 	lst_lncoll				=calc_lst_lncoll(lst_maxdataw,lst_lnpdd)
 	lst_offset_coll		=calc_lst_offset_coll(lst_lncoll,lst_lncss)
 	lst_heads					=calc_lst_heads(headers,lst_lncoll,tbl.meta.pdd)
+	lst_ansih					=calc_lst_ansih(lst_offset_coll)
 	mtx_idxy					=calc_mtx_idxy(tbl.data)
 	mtx_data					=calc_mtx_data(tbl.data,lst_lncoll,tbl.meta.pdd)
 	mtx_offx					=calc_mtx_offx(tbl.data,lst_offset_coll)
 	mtx_offy					=calc_mtx_offy(tbl.data)
 	mtx_ansih					=calc_mtx_ansih(mtx_offx,mtx_offy)
+	mtx_cssxy					=calc_mtx_cssxy(mtx_offx,mtx_offy,lst_css)
 	
 	ccld={ #calculated
 		'lst': {
@@ -316,6 +338,7 @@ def tbl_calc(table):
 		        	'lncoll'			:	lst_lncoll,
 		        	'offset_coll'	:	lst_offset_coll,
 		        	'heads'				:	lst_heads,
+							'ansih'				: lst_ansih,
 						},
 		'mtx':	{
 							'idxy'				:	mtx_idxy,
@@ -325,14 +348,17 @@ def tbl_calc(table):
 			    	  'offx'				: mtx_offx,
 							'offy'				: mtx_offy,
 							'ansih'				: mtx_ansih,
+							'cssxy'				:	mtx_cssxy,
 						},
 		}
 	return ccld
-
+sys.stdout.write('\t\t\t\t')
+sys.stdout.flush()
 calc = tbl_calc(table1)
 css=['',*calc['lst']['css']]
 
 tbl_mtx=calc['mtx']
+tbl_lst=calc['lst']
 tbl_mtx_data=tbl_mtx['data']['l']
 
 # for section in calc.keys():
@@ -359,16 +385,20 @@ tbl_mtx_data=tbl_mtx['data']['l']
 #
 import ANSI.fnx.m
 
-for h,(head,fs) in enumerate(zip(calc['lst']['heads']['c'],css)):
-	ANSI.fnx.m.stdout_mwrite(txt=fs,style=['d_uline'])
-	sys.stdout.write(head)
+for h,(head,fs,posxy) in enumerate(zip(tbl_lst['heads']['l'],css,tbl_lst['ansih'])):
+	# ANSI.fnx.m.stdout_mwrite(txt=fs,style=['red','uline',0])
+	sys.stdout.write(posxy)
+	ANSI.fnx.m.stdout_mwrite(txt=head,style=['bold','uline','red'])
 	sys.stdout.flush()
-sys.stdout.write('\n')
-for posx,row in zip(tbl_mtx['ansih'],tbl_mtx_data):
-	for posxy,col,fs in zip(posx,row,css):
+ANSI.fnx.m.stdout_mwrite(txt='\n',style=[])
+for posx,row,cssx in zip(tbl_mtx['ansih'],tbl_mtx_data,tbl_mtx['cssxy']):
+	for posxy,col,fs,posfs in zip(posx,row,css,cssx):
 		sys.stdout.write(posxy)
-		sys.stdout.write(fs)
-		sys.stdout.write(col)
+		# ANSI.fnx.m.stdout_mwrite(txt=fs,style=['bold','red',0])
+		sys.stdout.write(posxy)
+		ANSI.fnx.m.stdout_mwrite(txt=col,style=[])
+		sys.stdout.write(posfs)
+		ANSI.fnx.m.stdout_mwrite(txt=fs,style=['bold','red',0])
 		sys.stdout.flush()
 	sys.stdout.write('\n')
 	sys.stdout.flush()

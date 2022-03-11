@@ -70,11 +70,11 @@ def dct_aliasses():
 		'bwhite'						:	47,
 		}
 
-def m_seq(style):
+def str_seq(style):
 	def mkup(m):
 		dct_markup=dct_aliasses()
 		return dct_markup.get(m)
 	
 	lst_seq=[str(mkup(s)) for s in style]
 	str_seq=str(';').join(lst_seq)
-	return esc_m(str_seq)
+	return str_seq

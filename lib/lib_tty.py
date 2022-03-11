@@ -1,21 +1,20 @@
 #!/usr/bin/env python
 import shutil
 import sys
-
+import types
+import re
+import termios
+import tty
+import re
 def presets_re():
-	import types
-	import re
-	
 	preset = types.SimpleNamespace()
 	preset.repl_ANSIm = re.compile(r'\033\[[;\d]*m', re.VERBOSE).sub
 	preset.repl_ESCt = re.compile(r'\t', re.VERBOSE).sub
 	preset.repl_ESCs = re.compile(r' ', re.VERBOSE).sub
 	return preset
 
-def std_cursorloc():
-	import termios
-	import tty
-	import re
+def cursorloc():
+
 	
 	buf = ""
 	stdin = sys.stdin.fileno()
@@ -45,7 +44,6 @@ def terminal_width(**k):
 	stored += [width]
 	diff = (-1 * (stored[-2] - stored[-1]))
 	return stored
-
 
 def conv_t2s(s,t=4):
 	wtab = '\u0020' * t
