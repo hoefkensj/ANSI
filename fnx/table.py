@@ -14,7 +14,7 @@ table1 = {
 		'tb': {False},
 		'cb': {True},
 		'fss': '\u2502',  # \u250B',
-		'pdd': {'char':'#','min':[2,4,4]},
+		'pdd': {'char':'-','min':[2,4,4]},
 		'mrg': ' ',
 		'al': ['l', 'c', 'r']
 		},  # M META
@@ -196,15 +196,29 @@ def calc_lst_offset_coll(lst_lncoll,lst_lncss):
 		lst_offset_coll=addrel(lncoll+lst_lncss[0])
 	return lst_offset_coll[:-1]
 
-def calc_lst_heads(tbl_heads,lst_lncoll,pdd):
-	mtx_datal=[[] for col in tbl_heads]
-	mtx_datar=[[] for col in tbl_heads]
-	mtx_datac=[[] for col in tbl_heads]
+def calc_lst_heads(tbl_heads,lst_lncoll,pdd,just):
+	char=pdd.get('char')
+	lst_headsl=[[] for col in tbl_heads]
+	lst_headsr=[[] for col in tbl_heads]
+	lst_headsc=[[] for col in tbl_heads]
 	for c,cell in enumerate(tbl_heads):
-		mtx_datal[c]=str('{}'.format(tty_str(str(cell))).ljust(lst_lncoll[c],pdd.get('char'))).replace(tty_str(str(cell)),tty_mstr(str(cell)))
-		mtx_datar[c]=str('{}'.format(tty_str(str(cell))).rjust(lst_lncoll[c],pdd.get('char'))).replace(tty_str(str(cell)),tty_mstr(str(cell)))
-		mtx_datac[c]=str('{}'.format(tty_str(str(cell))).center(lst_lncoll[c],pdd.get('char'))).replace(tty_str(str(cell)),tty_mstr(str(cell)))
-	return {'l':mtx_datal,'r':mtx_datar,'c':mtx_datac}
+		str_tty					=	tty_str(str(cell))
+		str_mtty				=	tty_mstr(str(cell))
+		str_tty_l 			= str_tty.ljust(lst_lncoll[c],char)
+		str_tty_c 			= str_tty.center(lst_lncoll[c],char)
+		str_tty_r 			= str_tty.rjust(lst_lncoll[c],char)
+		str_mtty_l 			= str_tty_l.replace(str_tty,str_mtty)
+		str_mtty_c 			= str_tty_c.replace(str_tty,str_mtty)
+		str_mtty_r 			= str_tty_r.replace(str_tty,str_mtty)
+		lst_headsl[c]	=	str_mtty_l
+		lst_headsc[c]	=	str_mtty_c
+		lst_headsr[c]	=	str_mtty_r
+		lst_heads= {
+			'l'	:	lst_headsl,
+			'r'	:	lst_headsr,
+			'c'	:	lst_headsc,
+			}                        
+	return lst_heads
 
 def calc_lst_ansih(lst_offx):
 	import ANSI.lib.ansi
@@ -213,12 +227,13 @@ def calc_lst_ansih(lst_offx):
 	H=ANSI.cursor.position
 	lst_ansih=[H(';'.join([str(coord[0]),str(-1+colx+coord[1])])) for colx in lst_offx]
 	return lst_ansih
-
-def lst_ltorg(fs,cellw) -> list:
-	lst_leftbounds = [0, ]
-	lst_cellbwidths = [0, ] + [i + tty_len(s=fs) for i in cellw]
-	lst_leftbounds += [lst_cellbwidths[i] + cell + tty_len(s=fs) for i, cell in enumerate(cellw[:-1])]
-	return lst_leftbounds
+def calc_lst_jsthdrs():
+	pass
+# def lst_ltorg(fs,cellw) -> list:
+# 	lst_leftbounds = [0, ]
+# 	lst_cellbwidths = [0, ] + [i + tty_len(s=fs) for i in cellw]
+# 	lst_leftbounds += [lst_cellbwidths[i] + cell + tty_len(s=fs) for i, cell in enumerate(cellw[:-1])]
+# 	return lst_leftbounds
 
 def calc_mtx_offx(mtx_data,lst_offset_coll):
 	mtx_offx=[[]for row  in  mtx_data]
@@ -297,8 +312,8 @@ def calc_mtx_cssxy(mtx_offx,mtx_offy,lst_css):
 	return mtx_cssxy
 
 	
-def tbl_calc(table):
-	tbl					= dcon_table(table)
+def tbl_calc(tbl):
+
 	ncols				=	len(tbl.data[0])
 	mtx_dataw		=	calc_mtx_dataw(tbl.data)
 	piv_dataw		=	mtx_pivot(mtx_dataw)
@@ -316,7 +331,8 @@ def tbl_calc(table):
 	lst_maxdataw			=calc_lst_maxdataw(piv_dataw)
 	lst_lncoll				=calc_lst_lncoll(lst_maxdataw,lst_lnpdd)
 	lst_offset_coll		=calc_lst_offset_coll(lst_lncoll,lst_lncss)
-	lst_heads					=calc_lst_heads(headers,lst_lncoll,tbl.meta.pdd)
+	lst_jsthdrs				=calc_lst_jsthdrs()
+	lst_heads					=calc_lst_heads(headers,lst_lncoll,tbl.meta.pdd,lst_jsthdrs)
 	lst_ansih					=calc_lst_ansih(lst_offset_coll)
 	mtx_idxy					=calc_mtx_idxy(tbl.data)
 	mtx_data					=calc_mtx_data(tbl.data,lst_lncoll,tbl.meta.pdd)
@@ -352,14 +368,23 @@ def tbl_calc(table):
 						},
 		}
 	return ccld
-sys.stdout.write('\t\t\t\t')
-sys.stdout.flush()
-calc = tbl_calc(table1)
-css=['',*calc['lst']['css']]
 
-tbl_mtx=calc['mtx']
-tbl_lst=calc['lst']
-tbl_mtx_data=tbl_mtx['data']['l']
+
+def tty_printtable(table):
+	tbl		= dcon_table(table)
+	calc	= tbl_calc(tbl)
+	mtx=calc['mtx']
+	lst=calc['lst']
+	lst_headers=lst.get('heads')
+	lst_ansih=lst.get('ansih')
+	mtx_data=mtx.get('data')
+	mtx_cssxy=mtx.get('cssxy')
+	mtx_ansih=mtx.get('ansih')
+	
+	css=['',*calc['lst']['css']]
+
+
+
 
 # for section in calc.keys():
 # 	for key in calc[section].keys():
@@ -383,104 +408,134 @@ tbl_mtx_data=tbl_mtx['data']['l']
 # 		else:
 # 			print(section+':'+key+':\t'+str(calc[section][key]))
 #
-import ANSI.fnx.m
-
-for h,(head,fs,posxy) in enumerate(zip(tbl_lst['heads']['l'],css,tbl_lst['ansih'])):
-	# ANSI.fnx.m.stdout_mwrite(txt=fs,style=['red','uline',0])
-	sys.stdout.write(posxy)
-	ANSI.fnx.m.stdout_mwrite(txt=head,style=['bold','uline','red'])
-	sys.stdout.flush()
-ANSI.fnx.m.stdout_mwrite(txt='\n',style=[])
-for posx,row,cssx in zip(tbl_mtx['ansih'],tbl_mtx_data,tbl_mtx['cssxy']):
-	for posxy,col,fs,posfs in zip(posx,row,css,cssx):
-		sys.stdout.write(posxy)
-		# ANSI.fnx.m.stdout_mwrite(txt=fs,style=['bold','red',0])
-		sys.stdout.write(posxy)
-		ANSI.fnx.m.stdout_mwrite(txt=col,style=[])
-		sys.stdout.write(posfs)
-		ANSI.fnx.m.stdout_mwrite(txt=fs,style=['bold','red',0])
-		sys.stdout.flush()
-	sys.stdout.write('\n')
-	sys.stdout.flush()
+	import ANSI.fnx.m
 	
-# listprt2([calc.lst_stdw_ltorg])
-# listprt2([calc.lst_stdw_fsorg])
-#
-#
-# import time
-#
-# # row_next = tty_writesbl(s=M('10;10'))
-#
-# # tpl_org=std_cursorloc()
-# # tbl_org=ANSI_H(f'{tpl_org[1]};{tpl_org[0]}')
-# # tpl_org=std_cursorloc()
-# dat_org = H('2;0')  # ANSI_H(f'{tpl_org[1]+2};{tpl_org[0]}')
-# # def fn(fnx):
-# # 	time.sleep(1)
-# # 	sys.stdout.write(f'{fnx}1');sys.stdout.flush()
-# # 	time.sleep(1)
-# # 	sys.stdout.write(f'\033[10{fnx}');sys.stdout.flush()
-# # 	time.sleep(1)
-# # 	sys.stdout.write(f'{fnx}2');sys.stdout.flush()
-# # 	time.sleep(1)
-# #
-# # import string
-# # alfab=string.ascii_uppercase
-# # print(alfab)
-# # for f in alfab:
-# # 	fn(f)
-#
-#
-# # 	def tmp():
-# # 		for r,row in enumerate(tbl_data):
-# # 			for c,cell in enumerate(row):
-# # 				sys.stdout.write(f'\033[{calc_leftbounds()[c]}G{cell}')
-# # 			for b,border in enumerate(calc_borderorg()):
-# # 				sys.stdout.write(f'\033[0m\033[{calc_borderorg()[b]}G{fs}')
-# # 			sys.stdout.write('\n')
-# #
-# #
-# #
-# # # [print(row) for row in rows]
-# # # print()
-# # # print()
-# #
-# # upper = [chr(i) for i in range(65, 91)]
-# # lower = [chr(i) for i in range(96, 123)]
-# #
-# #
-# #
-# # calc_dimensions(tbl=table1)
-# #
-# # calc_dimensions(tbl=table2)
-# def lst_stdw_ltorg() -> list:
-# 	return [tty_writesbl(s=G(lb)) for lb in lst_ltorg(**k)]
-#
-# def lst_stdw_fsorg() -> list:
-# 	return [tty_writesbl(s=G(pd)) for pd in lst_fsorg(**k)]
-# def mtx_dataw(mtx_data) -> list:
-# 	return [[tty_len(s=cell) for cell in row] for row in mtx_data]
-#
-# def mtx_relorg(data) -> list:
-# 	return [[[f'{F(r)}{G(lst_cellw(**k)[c])}'] for c, cell in enumerate(data[r])] for r, row in enumerate(data)]
-#
-#
-# def mtx_tblsurface(fs, mg, pd, data):
-# 	# cell= padd[:x]+data+padd[x:]
-# 	# fs= mg+fs+mg
-# 	cells_dmy = [str().ljust(mx, '#').ljust(mx + tty_len(pd), pd) for mx in lst_datamax(data)]
-# 	len_fs = tty_len(s=f'{mg}{fs}{mg}')
-#
-# 	rowdummy = f'{mg}{fs}{mg}'.join(cells_dmy)
-# 	print(('dummy', rowdummy) for line in data)
-# def std_wr(s):
-# 	sys.stdout.write(str(s))
-# 	sys.stdout.flush()
-#
-#
-# def tty_writesbl(s):
-# 	def stdout_write():
-# 		sys.stdout.write(s)
-# 		sys.stdout.flush()
-# 		return tty_len()
-# 	return stdout_write
+	for h,(head,fs,posxy) in enumerate(zip(lst_headers['l'],css,lst_ansih)):
+		# ANSI.fnx.m.stdout_mwrite(txt=fs,style=['red','uline',0])
+		ANSI.fnx.m.stdout_mwrite(txt=[posxy,head],style=['bold','uline','red'])
+	ANSI.fnx.m.stdout_mwrite(txt='\n',style=[])
+	for posx,row,cssx in zip(mtx_ansih,mtx_data['l'],mtx_cssxy):
+		for posxy,col,fs,posfs in zip(posx,row,css,cssx):
+			ANSI.fnx.m.stdout_mwrite(txt=[posxy,col],style=[])
+			ANSI.fnx.m.stdout_mwrite(txt=[posfs,fs],style=['bold','red',0])
+		sys.stdout.write('\n')
+	sys.stdout.flush()
+		
+	# listprt2([calc.lst_stdw_ltorg])
+	# listprt2([calc.lst_stdw_fsorg])
+	#
+	#
+	# import time
+	#
+	# # row_next = tty_writesbl(s=M('10;10'))
+	#
+	# # tpl_org=std_cursorloc()
+	# # tbl_org=ANSI_H(f'{tpl_org[1]};{tpl_org[0]}')
+	# # tpl_org=std_cursorloc()
+	# dat_org = H('2;0')  # ANSI_H(f'{tpl_org[1]+2};{tpl_org[0]}')
+	# # def fn(fnx):
+	# # 	time.sleep(1)
+	# # 	sys.stdout.write(f'{fnx}1');sys.stdout.flush()
+	# # 	time.sleep(1)
+	# # 	sys.stdout.write(f'\033[10{fnx}');sys.stdout.flush()
+	# # 	time.sleep(1)
+	# # 	sys.stdout.write(f'{fnx}2');sys.stdout.flush()
+	# # 	time.sleep(1)
+	# #
+	# # import string
+	# # alfab=string.ascii_uppercase
+	# # print(alfab)
+	# # for f in alfab:
+	# # 	fn(f)
+	#
+	#
+	# # 	def tmp():
+	# # 		for r,row in enumerate(tbl_data):
+	# # 			for c,cell in enumerate(row):
+	# # 				sys.stdout.write(f'\033[{calc_leftbounds()[c]}G{cell}')
+	# # 			for b,border in enumerate(calc_borderorg()):
+	# # 				sys.stdout.write(f'\033[0m\033[{calc_borderorg()[b]}G{fs}')
+	# # 			sys.stdout.write('\n')
+	# #
+	# #
+	# #
+	# # # [print(row) for row in rows]
+	# # # print()
+	# # # print()
+	# #
+	# # upper = [chr(i) for i in range(65, 91)]
+	# # lower = [chr(i) for i in range(96, 123)]
+	# #
+	# #
+	# #
+	# # calc_dimensions(tbl=table1)
+	# #
+	# # calc_dimensions(tbl=table2)
+	# def lst_stdw_ltorg() -> list:
+	# 	return [tty_writesbl(s=G(lb)) for lb in lst_ltorg(**k)]
+	#
+	# def lst_stdw_fsorg() -> list:
+	# 	return [tty_writesbl(s=G(pd)) for pd in lst_fsorg(**k)]
+	# def mtx_dataw(mtx_data) -> list:
+	# 	return [[tty_len(s=cell) for cell in row] for row in mtx_data]
+	#
+	# def mtx_relorg(data) -> list:
+	# 	return [[[f'{F(r)}{G(lst_cellw(**k)[c])}'] for c, cell in enumerate(data[r])] for r, row in enumerate(data)]
+	#
+	#
+	# def mtx_tblsurface(fs, mg, pd, data):
+	# 	# cell= padd[:x]+data+padd[x:]
+	# 	# fs= mg+fs+mg
+	# 	cells_dmy = [str().ljust(mx, '#').ljust(mx + tty_len(pd), pd) for mx in lst_datamax(data)]
+	# 	len_fs = tty_len(s=f'{mg}{fs}{mg}')
+	#
+	# 	rowdummy = f'{mg}{fs}{mg}'.join(cells_dmy)
+	# 	print(('dummy', rowdummy) for line in data)
+	# def std_wr(s):
+	# 	sys.stdout.write(str(s))
+	# 	sys.stdout.flush()
+	#
+	#
+	# def tty_writesbl(s):
+	# 	def stdout_write():
+	# 		sys.stdout.write(s)
+	# 		sys.stdout.flush()
+	# 		return tty_len()
+	# 	return stdout_write
+
+tty_printtable(table1)
+
+table	= tbl_calc(dcon_table(table1))
+def ext(collection):
+	sys.stdout.write('\n');sys.stdout.flush()
+	def extl(lst):
+		for sublist in lst:
+			sys.stdout.write(str(repr(sublist)))
+			if isinstance(sublist,list):
+				if isinstance(sublist[0],list):
+					sys.stdout.write('\n')
+					extl(sublist)
+			elif isinstance(sublist,dict):
+				sys.stdout.write('\n')
+				extd(sublist)
+			else:
+				sys.stdout.flush()
+	def extd(dct):
+		for key in dct.keys():
+			sys.stdout.write('\n')
+			sys.stdout.write(str(key).ljust(15,'.'))
+			sys.stdout.write(str(':').ljust(4,'.'))
+			if isinstance(dct[key],list):
+				extl(dct[key])
+			elif isinstance(dct[key],dict):
+				extd(dct[key])
+			else:
+				sys.stdout.write(repr(dct[key]));
+				sys.stdout.flush()
+	
+	# sys.stdout.write(str(collection));sys.stdout.flush()
+	if isinstance(collection,list):extl(collection)
+	elif isinstance(collection,dict):extd(collection)
+	else:sys.stdout.write('\n');sys.stdout.flush()
+	
+ext(table)

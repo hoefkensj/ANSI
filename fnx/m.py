@@ -38,7 +38,7 @@ def stdout_mwrite(txt,style) -> str :
 		str_ansim=esc_m(str_seq)
 		template=template.format(TEMP=str().join([str_ansim, '{TEMP}']))
 	
-	str_mwrite=template.format(TEMP=str(txt))
+	str_mwrite=template.format(TEMP=str().join([chunk for chunk in txt]))
 	sys.stdout.write(str_mwrite)
 	sys.stdout.flush()
 	# sys.stdout.write('{ANSI}{STRING}'.format(ANSI=str_ansim,STRING=str(txt)));sys.stdout.flush()
