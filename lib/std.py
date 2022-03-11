@@ -5,5 +5,3 @@ def stdout_w(txt):
 	sys.stdout.flush()
 	return
 
-def
-
