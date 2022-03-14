@@ -10,11 +10,18 @@ import ANSI.fnx.table.mod_D_data
 
 
 table_meta={
-		'fss': '\u2502',  # \u250B',
-		'pdd': {'char'	:	'-',
-						'min':[2,4,4]},
-		'mrg': {'char'	: ' ',
-						'lns':[0,2,0]},
+		'fss': {
+						'char': '\u2502',  # \u250B',
+						'show':	[0,1,0],
+						},
+		'pdd': {
+						'char'	:	'-',
+						'min':	[2,4,4]
+						},
+		'mrg': {
+						'char'	: ' ',
+						'lns':	[0,2,0]
+						},
 		'hal': {'l': [1],'c':[2,3],'r':[]},
 		'dal': {'l': [1],'c':[],'r':[2,3]}
 		}
@@ -66,8 +73,8 @@ def mtx_pivot(mtx) -> list:
 
 def calc_lst_mrg(tbl) -> list:
 	mrg=tbl['M']['mrg']['char']
-	nheaders=len(tbl['D'][0])
-	lst_mrg=[['', mrg],*[[mrg,mrg] for _ in range(nheaders)][:-2],[mrg,'']]
+	ncdata=len(tbl['D'][0])
+	lst_mrg=[['',mrg],*[[mrg,mrg] for  i in range(ncdata+1-2)],[mrg,'']]
 	tbl['C']['lst_mrg']=lst_mrg
 	return tbl
 
@@ -99,17 +106,23 @@ def calc_lst_lnpdd(tbl) -> list:
 	return [ANSI.lib.lib_tty.tty_len(pdd) for pdd in lst_pdd]
 
 def calc_lst_fss(tbl) -> list:
+	ncdata=len(tbl['D'][0])
 
-	fs=tbl['M']['fss']
-	nheaders=len(tbl['D'][0])
-	lst_fss=[fs for _ in range(nheaders)][:-1]
+	fs=tbl['M']['fss']['char']
+	lst_fss=[fs for i  in  range(ncdata+1)]
 	tbl['C']['lst_fss']=lst_fss
 	return tbl
 
 def calc_lst_css(tbl):
+	ncdata=len(tbl['D'][0])
+	fs_show=tbl['M']['fss']['show']
+	lst_fs_show=[fs_show[0],*[fs_show[1] for i in range(ncdata+1-2)],fs_show[-1]]
 	lst_fss=tbl['C']['lst_fss']
 	lst_mrg=tbl['C']['lst_mrg']
-	lst_css=[f'{lst_mrg[i][1]}{lst_fss[i]}{lst_mrg[i+1][0]}' for i in range(len(lst_fss))]
+	lst_css=[]
+	for mrg,fss,show in zip(lst_mrg,lst_fss,lst_fs_show):
+		lst_css+=[f'{mrg[0]}{fss}{mrg[1]}'*show]
+	# lst_css=[f'{lst_mrg[i][1]}{lst_fss[i]}{lst_mrg[i+1][0]}' for i in range(len(lst_fss))]
 	tbl['C']['lst_css']=lst_css
 	return tbl
 
@@ -135,19 +148,23 @@ def calc_lst_lncoll(tbl) -> list:
 def calc_lst_offset_coll(tbl):
 	lst_lncoll=tbl['C']['lst_lncoll']
 	lst_lncss=tbl['C']['lst_lncss']
-	def addrel(add,rel=[],offset=[0,]):
-		rel+=[(sum(rel)+int(add))]
-		offset+=[sum(rel)]
-		return offset
-	for lncoll in lst_lncoll:
-		lst_offset_coll=addrel(lncoll+lst_lncss[0])
-	tbl['C']['lst_offset_coll']= lst_offset_coll[:-1]
+	def addrel(add,subtot):
+		tot=subtot+add
+		return tot
+	tot=0
+	plncol=0
+	lst_offset_coll=[]
+	for lncoll,lncss in zip(lst_lncoll,lst_lncss[1:]):
+		tot=addrel(lncoll+lncss,tot)
+		lst_offset_coll+=[tot]
+	tbl['C']['lst_offset_coll']= lst_offset_coll
 	return tbl
 
 def calc_mtx_offx(tbl):
 	lst_offset_coll=tbl['C']['lst_offset_coll']
 	mtx_data=tbl['D']
-	mtx_offx=[[]for row  in  mtx_data]
+	mtx_offx=[[0,]for row  in  mtx_data]
+
 	for r,row in enumerate(mtx_data):
 		for c,col in enumerate(row):
 			mtx_offx[r]+=[lst_offset_coll[c]]
@@ -216,19 +233,24 @@ def tbl_calc(tbl):
 
 
 def tty_printtable(table):
+	# print(repr(table['C']['lst_H_cfss_yxH']),repr(table['C']['lst_css']))
 
+	for h,(H_hdrs_yxH,H_jsthdrs) in enumerate(zip(table['C']['lst_H_hdrs_yxH'],table['C']['lst_H_jsthdrs'])):
+		ANSI.fnx.m.stdout_mwrite(txt=[H_hdrs_yxH,H_jsthdrs],style=['red','uline',]);sys.stdout.flush()
 	for h,(H_cfss_xyH,css) in enumerate(zip(table['C']['lst_H_cfss_yxH'],table['C']['lst_css'])):
-		ANSI.fnx.m.stdout_mwrite(txt=[H_cfss_xyH,css],style=['red','uline']);sys.stdout.flush()
-	for h,(headxy,head) in enumerate(zip(table['C']['lst_H_hdrs_yxH'],table['C']['lst_H_jsthdrs'])):
-		ANSI.fnx.m.stdout_mwrite(txt=[headxy,head],style=['uline']);sys.stdout.flush()
-	for r,row in enumerate(zip(table['C']['mtx_D_cfss_yxH'],table['C']['mtx_D_cfss'])):
-		for c,(D_cfss_xyH,D_cfss) in enumerate(zip(*row)):
-			ANSI.fnx.m.stdout_mwrite(txt=[D_cfss_xyH,D_cfss],style=['green']);sys.stdout.flush()
-		sys.stdout.flush()
-	for datax,row in zip(table['C']['mtx_D_data_yxH'],table['C']['mtx_D_data']):
-		for dataxy,col in zip(datax,row):
-			ANSI.fnx.m.stdout_mwrite(txt=[dataxy,col],style=[]);sys.stdout.flush()
-		sys.stdout.write('\n')
+		ANSI.fnx.m.stdout_mwrite(txt=[H_cfss_xyH,css],style=['uline']);sys.stdout.flush()
+	
+	
+	#
+
+	# for r,row in enumerate(zip(table['C']['mtx_D_cfss_yxH'],table['C']['mtx_D_cfss'])):
+	# 	for c,(D_cfss_xyH,D_cfss) in enumerate(zip(*row)):
+	# 		ANSI.fnx.m.stdout_mwrite(txt=[D_cfss_xyH,D_cfss],style=['green']);sys.stdout.flush()
+	#
+	# for datax,row in zip(table['C']['mtx_D_data_yxH'],table['C']['mtx_D_data']):
+	# 	for dataxy,col in zip(datax,row):
+	# 		ANSI.fnx.m.stdout_mwrite(txt=[dataxy,col],style=[]);sys.stdout.flush()
+	# 	sys.stdout.write('\n')
 	sys.stdout.write('\n')
 	sys.stdout.flush()
 	
@@ -238,10 +260,10 @@ def ext(collection):
 	sys.stdout.write('\n');sys.stdout.flush()
 	def extl(lst,t):
 		for sublist in lst:
-			sys.stdout.write(str('\t')*t)
+			sys.stdout.write(str('')*t)
 			sys.stdout.write(str(repr(sublist)))
 			if isinstance(sublist,list):
-				if isinstance(sublist[0],list):
+				if len(sublist)> 0 and isinstance(sublist[0],list):
 					sys.stdout.write('\n')
 					extl(sublist,t)
 			elif isinstance(sublist,dict):
@@ -275,6 +297,8 @@ def ext(collection):
 	else:sys.stdout.write('\n');sys.stdout.flush()
 
 table	= tbl_calc(table1)
-# ext(table)
+ext(table)
+print('')
+table	= tbl_calc(table1)
 tty_printtable(table)
 

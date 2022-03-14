@@ -2,7 +2,6 @@
 import shutil
 import sys
 import types
-import re
 import termios
 import tty
 import re

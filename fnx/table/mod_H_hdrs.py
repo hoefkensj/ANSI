@@ -34,13 +34,13 @@ def calc_lst_H_hdrs(tbl):
 
 def calc_lst_H_hdrs_yxH(tbl):
 	import ANSI.lib.lib_tty
-	lst_offx=tbl['C']['lst_offset_coll']
+	lst_offx=tbl['C']['mtx_offx'][1]
 	H=ANSI.lib.ansi.cursor['pos']
 	crd=ANSI.lib.lib_tty.pos_cursor()
-	lst_H_hdrs_yxH=[0 for  item in lst_offx]
+	lst_H_hdrs_yxH=['' for  item in lst_offx]
 	y=crd['y']
 	for c,colx in enumerate(lst_offx):
-		x=-1+colx+crd['x']
+		x=colx+crd['x']
 		lst_H_hdrs_yxH[c]=H(';'.join([str(y),str(x)]))
 	tbl['C']['lst_H_hdrs_yxH']=lst_H_hdrs_yxH
 	return tbl
@@ -59,15 +59,16 @@ def sel_lst_H_jsthdrs(tbl):
 
 def calc_lst_H_cfss_yxH(tbl):
 	import ANSI.lib.lib_tty
-	lst_offx=tbl['C']['mtx_offx'][0]
+	lst_offx=tbl['C']['mtx_offx'][1]
 	lst_css=tbl['C']['lst_css']
-	ln_cfss=ANSI.lib.lib_tty.tty_len(lst_css[0])
+	lst_lncss=tbl['C']['lst_lncss']
+	lst_offx_css=[0,]
 	crd=ANSI.lib.lib_tty.pos_cursor()
 	H=ANSI.lib.ansi.cursor['pos']
-	lst_H_cfss_yxH=[[] for col in lst_offx[1:]]
+	lst_H_cfss_yxH=[[] for col in lst_offx]
 	
-	for c,col in enumerate(lst_offx[1:]):
-		lst_H_cfss_yxH[c]=H(';'.join([str(crd['y']+1),str(col-1+crd['x']-ln_cfss)]))
+	for c,col in enumerate(lst_offx):
+		lst_H_cfss_yxH[c]=H(';'.join([str(crd['y']),str(col+crd['x']-lst_lncss[c])]))
 	tbl['C']['lst_H_cfss_yxH']=lst_H_cfss_yxH
-	print(repr(tbl['C']['lst_H_cfss_yxH']))
+	# print(repr(tbl['C']['lst_H_cfss_yxH']))
 	return tbl
