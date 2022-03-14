@@ -201,7 +201,7 @@ def calc_mtx_idxy(tbl):
 	return tbl
 
 def tbl_calc(tbl):
-
+	
 	# ncols				=	len(tbl['D'][0])
 	# mtx_dataw		=	calc_mtx_dataw(tbl['D'])
 	# piv_dataw		=	mtx_pivot(mtx_dataw)
@@ -233,14 +233,35 @@ def tbl_calc(tbl):
 
 
 def tty_printtable(table):
-	# print(repr(table['C']['lst_H_cfss_yxH']),repr(table['C']['lst_css']))
-
+	H=ANSI.lib.ansi.cursor['pos']
+	F=ANSI.lib.ansi.cursor['prevline']
+	E=ANSI.lib.ansi.cursor['nextline']
+	B=ANSI.lib.ansi.cursor['down']
+	org=ANSI.lib.lib_tty.pos_cursor()['y']
+	# crd=H(f"{ANSI.lib.lib_tty.pos_cursor()['y']};{ANSI.lib.lib_tty.pos_cursor()['x']}")	#
+	# # [print(i) for i in range(18)]
+	# # crd=H(f"{ANSI.lib.lib_tty.pos_cursor()['y']};{ANSI.lib.lib_tty.pos_cursor()['x']}")
+	# # print(repr(table['C']['lst_H_cfss_yxH']),repr(table['C']['lst_css']))
+	# print('crd:',repr(crd))
+	table	= tbl_calc(table)
+	surface_y=len([table['C']['lst_H_jsthdrs'],*table['C']['mtx_D_data']])
+	[print('i') for row in range(surface_y)]
+	ANSI.fnx.m.stdout_mwrite(txt=[F(surface_y)],style=[])
+	table	= tbl_calc(table)
+	# # [print(f'{F(r)}') for r,row in enumerate(table['C']['mtx_D_data']['l'])]
+	# ANSI.fnx.m.stdout_mwrite(txt=[B(12)],style=['bold'])
+	# ANSI.fnx.m.stdout_mwrite(txt=[F(16)],style=['bold'])
+	# table	= tbl_calc(table)
 	for h,(H_hdrs_yxH,H_jsthdrs) in enumerate(zip(table['C']['lst_H_hdrs_yxH'],table['C']['lst_H_jsthdrs'])):
-		ANSI.fnx.m.stdout_mwrite(txt=[H_hdrs_yxH,H_jsthdrs],style=['red','uline',]);sys.stdout.flush()
+	 	ANSI.fnx.m.stdout_mwrite(txt=[H_hdrs_yxH,H_jsthdrs],style=['red','uline']);sys.stdout.flush()
 	for h,(H_cfss_xyH,css) in enumerate(zip(table['C']['lst_H_cfss_yxH'],table['C']['lst_css'])):
-		ANSI.fnx.m.stdout_mwrite(txt=[H_cfss_xyH,css],style=['uline']);sys.stdout.flush()
-	
-	
+	 	ANSI.fnx.m.stdout_mwrite(txt=[H_cfss_xyH,css],style=['uline']);sys.stdout.flush()
+	#
+	mtx_D_cfss_yxH=table['C']['mtx_D_cfss_yxH']
+	mtx_D_cfss=table['C']['mtx_D_cfss']
+	for r,(D_cfss_yH,D_cfssy) in enumerate(zip(mtx_D_cfss_yxH,mtx_D_cfss)):
+		for c,(D_cfss_xyH,D_cfssc) in enumerate(zip(D_cfss_yH,D_cfssy)):
+			ANSI.fnx.m.stdout_mwrite(txt=[D_cfss_xyH,D_cfssc],style=[0]);sys.stdout.flush()
 	#
 
 	# for r,row in enumerate(zip(table['C']['mtx_D_cfss_yxH'],table['C']['mtx_D_cfss'])):
@@ -296,9 +317,7 @@ def ext(collection):
 	elif isinstance(collection,dict):extd(collection,t)
 	else:sys.stdout.write('\n');sys.stdout.flush()
 
-table	= tbl_calc(table1)
-ext(table)
-print('')
-table	= tbl_calc(table1)
-tty_printtable(table)
+# table	= tbl_calc(table1)
+# ext(table)
+tty_printtable(table1)
 

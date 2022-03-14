@@ -35,10 +35,11 @@ def calc_mtx_D_data(tbl):
 def calc_mtx_D_cfss(tbl):
 	import ANSI.lib.lib_tty
 	lst_css=tbl['C']['lst_css']
-	mtx_D_data=tbl['C']['mtx_D_data']
-	mtx_D_cfss=[[[] for col in row[1:]] for row in mtx_D_data]
+	mtx_D_data=tbl['C']['mtx_D_data']['l']
+	tbl_data=tbl['D']
+	mtx_D_cfss=[[[] for col in row] for row in tbl_data]
 	for r,row in enumerate(mtx_D_data):
-		for c,col in enumerate(row[1:]):
+		for c,col in enumerate(row):
 			mtx_D_cfss[r][c]=lst_css[c]
 	tbl['C']['mtx_D_cfss']=mtx_D_cfss
 	return tbl
@@ -66,12 +67,12 @@ def calc_mtx_D_cfss_yxH(tbl):
 	mtx_offy=tbl['C']['mtx_offy']
 	crd=ANSI.lib.lib_tty.pos_cursor()
 	H=ANSI.lib.ansi.cursor['pos']
-
+	lst_lncss=tbl['C']['lst_lncss']
 	mtx_D_cfss_yxH=[[[] for col in row] for row in mtx_offx]
-	for r,row in enumerate(zip(mtx_offx,mtx_offy)):
-		for c,col in enumerate(zip(row[0],row[1])):
-			x=str(col[0]+crd['x'])
-			y=str(col[1]+crd['y'])
+	for r,(rowx,rowy) in enumerate(zip(mtx_offx,mtx_offy)):
+		for c,(colx,coly) in enumerate(zip(rowx,rowy)):
+			x=str(colx+crd['x']-lst_lncss[c])
+			y=str(coly+crd['y'])
 			ansi=H(';'.join([y,x]))
 			mtx_D_cfss_yxH[r][c]=ansi
 	tbl['C']['mtx_D_cfss_yxH']=mtx_D_cfss_yxH

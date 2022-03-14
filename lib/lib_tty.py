@@ -40,7 +40,7 @@ def pos_cursor():
 		y=int(groups[0])
 	else:
 		#no tty
-		x=2
+		x=20
 		y=1
 	return {'x': x ,'y':  y}
 
