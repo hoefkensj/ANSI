@@ -4,7 +4,8 @@ import ANSI.lib.ansi
 
 
 def fn_m():
-	return fn('m')
+	fn=ANSI.lib.ansi.fn()
+	return fn['markup']['m']
 
 def m():
 	ansi_fn=ANSI.lib.ansi.fn()
@@ -17,8 +18,6 @@ def m():
 			else:
 				return markup('{t};2;{r};{g};{b}'.format(t=t,r=rgb[1:2],g=rgb[3:4],b=rgb[5:6]))
 		return fn
-	
- 
 	
 	
 	m						=	types.SimpleNamespace()	#	0 - 9

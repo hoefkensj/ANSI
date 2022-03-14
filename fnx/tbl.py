@@ -59,10 +59,3 @@ def xy(XY):
 def idc_x(mtx):
 		pass
 table={}
-
-# table['IDXX']	=	idxy(data)
-# table['DATA'] = data
-
-
-# print(repr(table))
-# print(ord('A'))

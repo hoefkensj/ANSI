@@ -3,12 +3,11 @@
 ANSI: ^ESC[]m module
 """
 import sys
-import ANSI.lib.m
-import ANSI.lib.std
 import ANSI.lib.ansi
+import ANSI.lib.m
 
 fn=ANSI.lib.ansi.fn()
-esc_m=fn.markup.m
+esc_m=fn['markup']['m']
 
 def str_style(style) -> str :
 	str_seq=ANSI.lib.m.str_seq(style)
@@ -26,7 +25,7 @@ def stdwset_style(style) -> callable:
 def stdout_mwrite(txt,style) -> str :
 	template='{TEMP}'
 	
-	if len(style) > 0 and(style[-1] == 0 or style[-1] =='reset'):
+	if len(style) > 0 and (style[-1] == 0 or style[-1] =='reset'):
 		str_fin=ANSI.lib.m.str_seq([0])
 		str_seq=ANSI.lib.m.str_seq(style[:-1])
 		str_ansim=esc_m(str_seq)
@@ -38,7 +37,7 @@ def stdout_mwrite(txt,style) -> str :
 		str_ansim=esc_m(str_seq)
 		template=template.format(TEMP=str().join([str_ansim, '{TEMP}']))
 	
-	str_mwrite=template.format(TEMP=str().join([chunk for chunk in txt]))
+	str_mwrite=template.format(TEMP=str().join(txt))
 	sys.stdout.write(str_mwrite)
 	sys.stdout.flush()
 	# sys.stdout.write('{ANSI}{STRING}'.format(ANSI=str_ansim,STRING=str(txt)));sys.stdout.flush()
