@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import lib
+import ANSI.lib.lib_tty
 
 def calc_lst_mrg(tbl) -> list:
 	mrg=tbl['M']['mrg']['char']
@@ -9,7 +9,6 @@ def calc_lst_mrg(tbl) -> list:
 	return tbl
 
 def calc_lst_lnmrg(tbl) -> list:
-	import ANSI.lib.lib_tty
 	ttyln=ANSI.lib.lib_tty.tty_len
 	lst_mrg=tbl['C']['lst_mrg']
 	lst_lnmrg=[ttyln(lst_mrg[m][1])+ttyln(lst_mrg[m+1][0]) for m,_ in enumerate(lst_mrg[:-1])]
@@ -38,7 +37,6 @@ def calc_lst_css(tbl):
 	return tbl
 
 def calc_lst_lncss(tbl):
-	import ANSI.lib.lib_tty
 	lst_css=tbl['C']['lst_css']
 	lst_lncss=[ANSI.lib.lib_tty.tty_len(css) for css in lst_css]
 	tbl['C']['lst_lncss']=lst_lncss

@@ -43,8 +43,8 @@ cursor={
 markup={
 				'markup'										:	esc_fn('\x1B[{}m'),
 				'm'													:	esc_fn('\x1B[{}m'),
-				'erase_disp'								:	esc_fn('\x1B[{}J'),		#	(n=0) 	Clear part of the screen. 0, 1, 2, and 3 have various specific functions
-				'erase_line'								:	esc_fn('\x1B[{}K'),	#	(n=0) 	Clear part of the line. 0, 1, and 2 have various specific functions
+				'clear_disp'								:	esc_fn('\x1B[{}J'),		#	(n=0) 	Clear part of the screen. 0, 1, 2, and 3 have various specific functions
+				'clear_line'								:	esc_fn('\x1B[{}K'),	#	(n=0) 	Clear part of the line. 0, 1, and 2 have various specific functions
 				'scroll_up'									:	esc_fn('\x1B[{}S'),	#	(n=1) 	Scroll
 				'scroll_dn'									:	esc_fn('\x1B[{}T'),	#	(n=1) 	Scroll window
 }

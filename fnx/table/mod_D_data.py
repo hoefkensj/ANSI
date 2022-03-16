@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import ANSI.lib.lib_tty
+import ANSI.fnx.table.table
+
 
 def calc_mtx_D_data(tbl):
 	import ANSI.lib.lib_tty
@@ -76,4 +78,22 @@ def calc_mtx_D_cfss_yxH(tbl):
 			ansi=H(';'.join([y,x]))
 			mtx_D_cfss_yxH[r][c]=ansi
 	tbl['C']['mtx_D_cfss_yxH']=mtx_D_cfss_yxH
+	return tbl
+
+def calc_mtx_dataw(tbl):
+	mtx_data=tbl['D']
+	dataw=[]
+	for r,row in enumerate(mtx_data):
+		roww=[]
+		for cell in row:
+			roww+=[ANSI.lib.lib_tty.tty_len(cell)]
+		dataw+=[roww]
+	tbl['C']['mtx_dataw']=dataw
+	return tbl
+
+def calc_lst_maxdataw(tbl) -> list:  # calculate the minimum width of collumn for all data in col to fit .
+	tbl=ANSI.fnx.table.mod_D_data.calc_mtx_dataw(tbl)
+	mtx_dataw=tbl['C']['mtx_dataw']
+	piv_dataw= ANSI.fnx.table.table.mtx_pivot(mtx_dataw)
+	tbl['C']['lst_maxdataw']=[max(col) for col in piv_dataw]
 	return tbl
