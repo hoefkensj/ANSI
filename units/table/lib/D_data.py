@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-import ANSI.lib.lib_tty
-import ANSI.fnx.table.table
+import ANSI.lib.tty
+import ANSI.lib.mtx
 
 
 def calc_mtx_D_data(tbl):
-	import ANSI.lib.lib_tty
 	lst_lncoll=tbl['C']['lst_lncoll']
 	tbl_data=tbl['D']
 	char=tbl['M']['pdd']['char']
@@ -27,15 +26,14 @@ def calc_mtx_D_data(tbl):
 			mtx_datac[r][c]	=	str_mtty_c
 			mtx_datar[r][c]	=	str_mtty_r
 	mtx_data= {
-		'l'	:	mtx_datal,
-		'r'	:	mtx_datar,
-		'c'	:	mtx_datac,
+		'l' :	mtx_datal,
+		'r' :	mtx_datar,
+		'c' :	mtx_datac,
 		}
 	tbl['C']['mtx_D_data']=mtx_data
 	return tbl
 
 def calc_mtx_D_cfss(tbl):
-	import ANSI.lib.lib_tty
 	lst_css=tbl['C']['lst_css']
 	mtx_D_data=tbl['C']['mtx_D_data']['l']
 	tbl_data=tbl['D']
@@ -47,7 +45,6 @@ def calc_mtx_D_cfss(tbl):
 	return tbl
 	
 def calc_mtx_D_data_yxH(tbl):
-	import ANSI.lib.lib_tty
 	mtx_offx=tbl['C']['mtx_offx']
 	mtx_offy=tbl['C']['mtx_offy']
 	crd=ANSI.lib.lib_tty.pos_cursor()
@@ -64,7 +61,6 @@ def calc_mtx_D_data_yxH(tbl):
 	return tbl
 
 def calc_mtx_D_cfss_yxH(tbl):
-	import ANSI.lib.lib_tty
 	mtx_offx=tbl['C']['mtx_offx']
 	mtx_offy=tbl['C']['mtx_offy']
 	crd=ANSI.lib.lib_tty.pos_cursor()
@@ -80,7 +76,7 @@ def calc_mtx_D_cfss_yxH(tbl):
 	tbl['C']['mtx_D_cfss_yxH']=mtx_D_cfss_yxH
 	return tbl
 
-def calc_mtx_dataw(tbl):
+def calc_mtx_D_wdths(tbl):
 	mtx_data=tbl['D']
 	dataw=[]
 	for r,row in enumerate(mtx_data):
@@ -92,8 +88,8 @@ def calc_mtx_dataw(tbl):
 	return tbl
 
 def calc_lst_maxdataw(tbl) -> list:  # calculate the minimum width of collumn for all data in col to fit .
-	tbl=ANSI.fnx.table.mod_D_data.calc_mtx_dataw(tbl)
+	tbl= units.table.mod.mod_D_data.calc_mtx_D_wdths(tbl)
 	mtx_dataw=tbl['C']['mtx_dataw']
-	piv_dataw= ANSI.fnx.table.table.mtx_pivot(mtx_dataw)
+	piv_dataw= ANSI.lib.lib_mtx.mtx_pivot(mtx_dataw)
 	tbl['C']['lst_maxdataw']=[max(col) for col in piv_dataw]
 	return tbl

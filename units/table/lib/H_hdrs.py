@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-import ANSI.lib.lib_tty
+import ANSI.lib.tty
 
 def calc_lst_H_hdrs(tbl):
-	import ANSI.lib.lib_tty
 	lst_lncoll=tbl['C']['lst_lncoll']
 	tbl_heads=tbl['H']
 	char=tbl['M']['pdd']['char']
@@ -24,16 +23,15 @@ def calc_lst_H_hdrs(tbl):
 		lst_headsc[c]	=	str_mtty_c
 		lst_headsr[c]	=	str_mtty_r
 		dct_lsthdrs= {
-			'l'	:	lst_headsl,
-			'r'	:	lst_headsr,
-			'c'	:	lst_headsc,
+			'l' :	lst_headsl,
+			'r' :	lst_headsr,
+			'c' :	lst_headsc,
 			}
 	
 	tbl['C']['dct_lsthdrs']=dct_lsthdrs
 	return tbl
 
 def calc_lst_H_hdrs_yxH(tbl):
-	import ANSI.lib.lib_tty
 	lst_offx=tbl['C']['mtx_offx'][1]
 	H=ANSI.lib.ansi.cursor['pos']
 	crd=ANSI.lib.lib_tty.pos_cursor()
@@ -58,7 +56,6 @@ def sel_lst_H_jsthdrs(tbl):
 	return tbl
 
 def calc_lst_H_cfss_yxH(tbl):
-	import ANSI.lib.lib_tty
 	lst_offx=tbl['C']['mtx_offx'][1]
 	lst_css=tbl['C']['lst_css']
 	lst_lncss=tbl['C']['lst_lncss']

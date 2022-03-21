@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import ANSI.fnx
-import ANSI.lib.lib_tty
+import ANSI.lib.tty
 
 def calc_lst_pdd(tbl) -> list:
 	pdd=tbl['M']['pdd']
@@ -24,7 +24,7 @@ def calc_lst_lnpdd(tbl) -> list:
 def calc_lst_lncoll(tbl) -> list:
 	tbl=calc_lst_lnpdd(tbl)
 	lst_lnpdd=tbl['C']['lst_lnpdd']
-	tbl= ANSI.fnx.table.mod_D_data.calc_lst_maxdataw(tbl)
+	tbl= table.mod_D_data.calc_lst_maxdataw(tbl)
 	lst_maxdataw=tbl['C']['lst_maxdataw']
 	tbl['C']['lst_lncoll']=[(lndata + lnpdd) for lndata, lnpdd in zip(lst_maxdataw, lst_lnpdd)]
 	return tbl

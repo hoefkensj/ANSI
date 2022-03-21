@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import ANSI.lib.lib_tty
+import ANSI.lib.tty
 
 def calc_lst_mrg(tbl) -> list:
 	mrg=tbl['M']['mrg']['char']
