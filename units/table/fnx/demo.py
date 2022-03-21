@@ -2,7 +2,6 @@
 import sys
 import ANSI.lib.ansi
 import ANSI.fnx.m
-import ANSI.table
 
 tbl_1=table1
 

@@ -16,24 +16,28 @@ cfg_table_orgs={}
 
 
 META={
-		'fss': {
+		'tit':	{
+						'tit'			: None,
+						'sub'			:	None,
+						},
+		'fss':	{
 						'char'	: '\u2502',  # B',\u2502
 						'show'	:	[0,1,0],
 						},
-		'pdd': {
+		'pdd':	{
 						'char'	:	' ',
 						'show'	:	[0,0,0]
 						},
-		'mrg': {
+		'mrg':	{
 						'char'	: ' ',
 						'show'	:	[0,2,0]
 						},
-		'hal': {
+		'hal':	{
 						'l': 	[1],
 						'c':	[2,3],
 						'r':	[]
 						},
-		'dal': {
+		'dal':	{
 						'l':	[1],
 						'c':	[],
 						'r':	[2,3]
@@ -52,8 +56,6 @@ table_calc={}
 
 
 table1 = {
-	'T': [['title'], ['subtitle']],  # T TITLES
-	
 	'M': table_meta,  # M META
 	'D': table_data,
 	'F': [['help'], ['footer']],
@@ -69,3 +71,5 @@ cfg_table={
 	'C':{},
 	'O':{},
 }
+
+def create_table_conf():
