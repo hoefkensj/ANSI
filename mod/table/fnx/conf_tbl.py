@@ -6,13 +6,7 @@ cfg_table_block={
 'vals':	[],
 }
 
-cfg_table_tits=cfg_table_block
-cfg_table_hdrs={}
-cfg_table_meta={}
-cfg_table_data={}
-cfg_table_ftrs={}
-cfg_table_clcd={}
-cfg_table_orgs={}
+cfg_table_tits=cfg_table_bl
 
 
 META={
@@ -53,12 +47,14 @@ DATA=[
 				['\033[31m100%','\033[31mOOP FREE CODE','\033[31mTHE_UNLICENCE!']
 			]
 table_calc={}
-
+DATA_LAYERS=[['mtx_IDXY'],['mtx_cXY'],['mtx_rcM'],['mtx_cellM']['mtx_D_cell']]
 
 table1 = {
-	'M': table_meta,  # M META
-	'D': table_data,
-	'F': [['help'], ['footer']],
+	'S': '', #printing this wil print the whole table (print(table1['S']))
+	'L': {'D' : DATA_LAYERS,
+				'T'	:	TBLE_LAYERS,}
+	'M': META,  # M META
+	'D': DATA,
 	'C': table_calc,
 	}
 
