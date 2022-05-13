@@ -1,71 +1,26 @@
 #!/usr/bin/env python
-import ANSI.fnx.markup
 
-cfg_table_block={
-'keys': [],
-'vals':	[],
-}
 
-cfg_table_tits=cfg_table_bl
 
 
 META={
-		'tit':	{
-						'tit'			: None,
-						'sub'			:	None,
-						},
-		'fss':	{
-						'char'	: '\u2502',  # B',\u2502
-						'show'	:	[0,1,0],
-						},
-		'pdd':	{
-						'char'	:	' ',
-						'show'	:	[0,0,0]
-						},
-		'mrg':	{
-						'char'	: ' ',
-						'show'	:	[0,2,0]
-						},
-		'hal':	{
-						'l': 	[1],
-						'c':	[2,3],
-						'r':	[]
-						},
-		'dal':	{
-						'l':	[1],
-						'c':	[],
-						'r':	[2,3]
-						}
+		'tit':	{'tit'			: None,	'sub'			:	None,	},
+		'fss':	{'chr'	: '\u2502', 'dsp'	:	[0,1,0],	},
+		'pdd':	{'chr'	:	' ',			'dsp'	:	[0,0,0]		},
+		'mrg':	{'chr'	: ' ',			'dsp'	:	[0,2,0]		},
+		'hal':	{'l': 	[1],	'c':	[2,3],'r':	[]		},
+		'dal':	{'l':	[1],		'c':	[],		'r':	[2,3]	},
 		}
-HDRS= 	['2k22', 'HOEFKENSJ', '@GitHub'],  # H HEADERS
-DATA=[
-				[1 , 'cell', '@#$%'],
-				[2 , '\x1b[32mcolors', '\u255FUnicode\u255F' ],
-				['3' , '\033[7m     SELECTIONS', '\033[7mCELL|ROW BASED'],
-				[4 , 'Green', ''],
-				[5 , 'ANSI', 'TABLE'],
-				['\033[31m100%','\033[31mOOP FREE CODE','\033[31mTHE_UNLICENCE!']
-			]
-table_calc={}
-DATA_LAYERS=[['mtx_IDXY'],['mtx_cXY'],['mtx_rcM'],['mtx_cellM']['mtx_D_cell']]
+HDRS= 	['2k22', 'HOEFKENSJ', 																	 '@GitHub'],  # H HEADERS
 
-table1 = {
-	'S': '', #printing this wil print the whole table (print(table1['S']))
-	'L': {'D' : DATA_LAYERS,
-				'T'	:	TBLE_LAYERS,}
-	'M': META,  # M META
-	'D': DATA,
-	'C': table_calc,
-	}
 
-cfg_table={
-	'T':{},
-	'H':{},
-	'M':META,
-	'D':DATA,
-	'F':{},
-	'C':{},
-	'O':{},
-}
+
+
+
+DATA_LAYERS=[['mtx_IDXY'],['mtx_XYAH'],['mtx_AM_row']['mtx_AM_col'],['mtx_AM_row'],['mtx_D_cell']['mtx_ansiM_reset']]
+
+
 
 def create_table_conf():
+	cfg_table={}
+	cfg_table['META']=META

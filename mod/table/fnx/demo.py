@@ -3,6 +3,16 @@ import sys
 import ANSI.lib.ansi
 import ANSI.fnx.m
 
+DATA=		[
+				[1 , 'cell', 																		  					'@#$%'],
+				[2 , '\x1b[32mcolors',										 '\u255FUnicode\u255F'  ],
+				['3' , '\033[7m     SELECTIONS', 					 '\033[7mCELL|ROW BASED'],
+				[4 , 'Green', 																									''],
+				[5 , 'ANSI',                              	               'TABLE'],
+				['\033[31m100%','\033[31mOOP FREE CODE', 	'\033[31mTHE_UNLICENCE!']
+				]
+
+
 tbl_1=table1
 
 tbl_1,write_table1=tty_printtable(tbl_1)
@@ -43,3 +53,6 @@ mxy=max([key for key in tbl_1['O'].keys()])+2
 ANSI.fnx.m.stdout_mwrite(txt=[E(int(mxy))],style=[]);sys.stdout.flush()
 # print('\n'*mxy)
 # ext(tbl_1)
+
+
+table=ANSI.mod.table.make()

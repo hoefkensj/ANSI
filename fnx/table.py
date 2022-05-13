@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import ANSI.units.table
+import ANSI.mod.table
 print('THERE ARE STILL SOME PROBLEMS ,... ONE OF THEM BEING WHEN THE [ENTER] LAUNCH IS BADLE DEBOUNCED THE WHOLE APP BREAKS')
 
 
